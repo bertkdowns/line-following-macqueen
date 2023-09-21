@@ -1,5 +1,5 @@
 #include "MicroBit.h"
-#include "samples/Tests.h"
+#include "macqueen.h"
 
 MicroBit uBit;
 
@@ -7,8 +7,11 @@ int main()
 {
     uBit.init();
 
-    out_of_box_experience();
+    motorRun(Motors::All, Dir::CW,0x80);
 
-    microbit_panic( 999 );
+    uBit.sleep(2000);
+
+    motorRun(Motors::All, Dir::CW,0x0);
+
 }
 
