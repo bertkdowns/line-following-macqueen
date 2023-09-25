@@ -1,0 +1,56 @@
+#include "MicroBit.h"
+#include "macqueen.h"
+
+MicroBit uBit;
+
+int main()
+{
+    uBit.init();
+
+    //Motor Run is driving
+    //CW means forward
+    //0x80 means speed at 128 digital value
+    
+    //Sleep for 2 seconds
+    uBit.sleep(2000);
+    //0x0 means stop
+    
+
+    /// loop forever
+
+    // if left patrol sensor is on, turn the left led on
+
+    // if right senspor is on turn the right led on
+    while(1)
+    {
+        if(readPatrol(Patrol::PatrolLeft))
+        {
+            writeLED(LED::LEDLeft, LEDswitch::turnOn);
+            motorRun(Motors::Left, Dir::CW,0x80);
+        }
+        else
+        {
+            writeLED(LED::LEDLeft, LEDswitch::turnOff);
+            motorRun(Motors::Left, Dir::CW,0x0);
+        }
+        if(readPatrol(Patrol::PatrolRight))
+        {
+            writeLED(LED::LEDRight, LEDswitch::turnOn);
+            motorRun(Motors::Right, Dir::CW,0x80);
+        }
+        else
+        {
+            writeLED(LED::LEDRight, LEDswitch::turnOff);
+            motorRun(Motors::Right, Dir::CW,0x0);
+        }
+
+        if(!readPatrol(Patrol::PatrolLeft) && !readPatrol(Patrol::PatrolRight))
+        {
+            motorRun(Motors::All, Dir::CW,0x80);
+        }
+        uBit.sleep(20);
+    }
+    //Make LEDS flash
+
+}
+

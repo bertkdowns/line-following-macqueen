@@ -6,8 +6,8 @@ extern MicroBit uBit; // extern, because it is defined in main.cpp
 #define MOTOR_ADDRESS 0x20 // device address is 0x10 but must be left shifted for Micro:bit libraries.
 
 enum class Motors {
-    M1,
-    M2,
+    Left,
+    Right,
     All
 };
 
@@ -35,11 +35,11 @@ void motorRun(Motors index, Dir direction, uint8_t speed) {
     uint8_t buf[3];
     buf[1] =  (direction == Dir::CW) ? 0 : 1; // 0 forward,  1 backward
     buf[2] = speed;
-    if (index == Motors::M1 || index == Motors::All) {
+    if (index == Motors::Left || index == Motors::All) {
         buf[0] = 0x00;
         uBit.i2c.write(MOTOR_ADDRESS, buf, 3);
     }
-    if (index == Motors::M2 || index == Motors::All) {
+    if (index == Motors::Right || index == Motors::All) {
         buf[0] = 0x02;
         uBit.i2c.write(MOTOR_ADDRESS, buf, 3);
     }

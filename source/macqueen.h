@@ -3,8 +3,8 @@
 #include "MicroBit.h"
 
 enum class Motors {
-    M1,
-    M2,
+    Left,
+    Right,
     All
 };
 
