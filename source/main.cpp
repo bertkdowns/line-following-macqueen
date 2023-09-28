@@ -21,8 +21,8 @@ void followLeft(int offLeft, int offRight){
         // We have hit an intersection, turn left
         motorRun(Motors::Left, Dir::CW,0x0);
         motorRun(Motors::Right, Dir::CW,0x80);
-        delay(100);
-        follow_direction = FOLLOW_RIGHT;
+        uBit.sleep(100);
+        //follow_direction = FOLLOW_RIGHT;
     }
     // both black
     else if(!offLeft && !offRight){
@@ -43,8 +43,8 @@ void followRight(int offLeft, int offRight){
         // We have hit an intersection, turn right
         motorRun(Motors::Right, Dir::CW,0x0);
         motorRun(Motors::Left, Dir::CW,0x80);
-        delay(100);
-        follow_direction = FOLLOW_LEFt;
+        uBit.sleep(100);
+        follow_direction = FOLLOW_LEFT;
         
     }
     // black on left side, white on right side
@@ -86,7 +86,6 @@ int main()
     
 
     /// loop forever
-    int turnLeft = 1;
     // if left patrol sensor is on, turn the left led on
     // if right senspor is on turn the right led on
     while(1)
