@@ -76,6 +76,13 @@ int main()
             */
         }
         uBit.sleep(20);
+        int distance = readUlt();
+        while(distance < 5 && distance >= 0) //3 centimetres away
+        {
+            motorRun(Motors::All, Dir::CW, 0x0);
+            uBit.sleep(1000);
+            distance = readUlt();
+        }
     }
     //Make LEDS flash
 

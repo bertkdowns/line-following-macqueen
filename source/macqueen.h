@@ -34,4 +34,6 @@ int readPatrol(Patrol patrol) ;
 
 void writeLED(LED led, LEDswitch ledswitch);
 
+int readUlt();
+
 #endif

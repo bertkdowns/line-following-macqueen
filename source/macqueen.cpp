@@ -65,3 +65,26 @@ void writeLED(LED led, LEDswitch ledswitch) {
         uBit.io.P12.setDigitalValue( (int) ledswitch);
     }
 }
+
+int readUlt(){
+        int d = 0;
+        uBit.io.P1.setDigitalValue(1);
+    
+        uBit.sleep(1);
+        uBit.io.P1.setDigitalValue(0);
+        if (uBit.io.P2.getDigitalValue() == 0) {
+            uBit.io.P1.setDigitalValue(0);
+            uBit.io.P1.setDigitalValue(1);
+            uBit.sleep(20);
+            uBit.io.P1.setDigitalValue(0);
+            d = uBit.io.P2.getPulseUs(500*58);//pins.pulseIn(DigitalPin.P2, PulseValue.High, 500 * 58);//readPulseIn(1);
+        } else {
+            uBit.io.P1.setDigitalValue(1);
+            uBit.io.P1.setDigitalValue(0);
+            uBit.sleep(20);
+            uBit.io.P1.setDigitalValue(0);
+            d = uBit.io.P2.getPulseUs(500*58);//readPulseIn(0);
+        }
+        int x = d / 59;
+        return x;//In centimeters
+    }
