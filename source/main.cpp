@@ -3,6 +3,75 @@
 
 MicroBit uBit;
 
+#define FOLLOW_LEFT -1
+#define FOLLOW_FORWARD 0
+#define FOLLOW_RIGHT 1
+
+int follow_direction = FOLLOW_LEFT;
+
+void followLeft(int offLeft, int offRight){
+    // white on left side, black on right side
+    if(offLeft && !offRight){
+        //right motor slightly faster than left motor
+        motorRun(Motors::Left, Dir::CW,0x30);
+        motorRun(Motors::Right, Dir::CW,0x80);
+    }
+    // black on left side, white on right side
+    else if(!offLeft && offRight){
+        // We have hit an intersection, turn left
+        motorRun(Motors::Left, Dir::CW,0x0);
+        motorRun(Motors::Right, Dir::CW,0x80);
+        delay(100);
+        follow_direction = FOLLOW_RIGHT;
+    }
+    // both black
+    else if(!offLeft && !offRight){
+        // turn slightly left??
+        motorRun(Motors::Right, Dir::CW,0x80);
+        motorRun(Motors::Left, Dir::CW,0x60);
+    }
+    // both white
+    else{
+        // turn right
+        motorRun(Motors::Right, Dir::CW,0x10);
+        motorRun(Motors::Left, Dir::CW,0x80);
+    }
+}
+void followRight(int offLeft, int offRight){
+    // white on left side, black on right side
+    if(offLeft && !offRight){
+        // We have hit an intersection, turn right
+        motorRun(Motors::Right, Dir::CW,0x0);
+        motorRun(Motors::Left, Dir::CW,0x80);
+        delay(100);
+        follow_direction = FOLLOW_LEFt;
+        
+    }
+    // black on left side, white on right side
+    else if(!offLeft && offRight){
+        //left motor slightly faster than right motor
+        motorRun(Motors::Right, Dir::CW,0x30);
+        motorRun(Motors::Left, Dir::CW,0x80);
+        
+    }
+    // both black
+    else if(!offLeft && !offRight){
+        // turn slightly right
+        motorRun(Motors::Left, Dir::CW,0x80);
+        motorRun(Motors::Right, Dir::CW,0x60);
+    }
+    // both white
+    else{
+        // turn left
+        motorRun(Motors::Left, Dir::CW,0x10);
+        motorRun(Motors::Right, Dir::CW,0x80);
+    }
+}
+void followForward(int offLeft, int offRight){
+
+}
+
+
 int main()
 {
     uBit.init();
@@ -22,59 +91,19 @@ int main()
     // if right senspor is on turn the right led on
     while(1)
     {
-        // white on left side, black on right side
-        if(readPatrol(Patrol::PatrolLeft) && !readPatrol(Patrol::PatrolRight))
-        {
-            //right motor slightly faster than left motor
-            writeLED(LED::LEDLeft, LEDswitch::turnOn);
-            motorRun(Motors::Left, Dir::CW,0x30);
-            writeLED(LED::LEDRight, LEDswitch::turnOff);
-            motorRun(Motors::Right, Dir::CW,0x80);
-        }
-        // black on left side, white on right side
-        else if(!readPatrol(Patrol::PatrolLeft) && readPatrol(Patrol::PatrolRight))
-        {
-            // We have hit an intersection, turn left
-            writeLED(LED::LEDLeft, LEDswitch::turnOff);
-            motorRun(Motors::Left, Dir::CW,0x0);
-            writeLED(LED::LEDRight, LEDswitch::turnOn);
-            motorRun(Motors::Right, Dir::CW,0x80);
-        }
-        // both black
-        else if(!readPatrol(Patrol::PatrolLeft) && !readPatrol(Patrol::PatrolRight))
-        {
-            // turn slightly left??
-            motorRun(Motors::Right, Dir::CW,0x80);
-            motorRun(Motors::Left, Dir::CW,0x60);
-            writeLED(LED::LEDLeft, LEDswitch::turnOff);
-            writeLED(LED::LEDRight, LEDswitch::turnOff);
-        }
-        // both white
-        else
-        {
-            // turn right
-            motorRun(Motors::Right, Dir::CW,0x10);
-            motorRun(Motors::Left, Dir::CW,0x80);
-            writeLED(LED::LEDLeft, LEDswitch::turnOn);
-            writeLED(LED::LEDRight, LEDswitch::turnOn);
+        // Read sesor Values (1 if on white, 0 if on black)
+        bool offLeft =  readPatrol(Patrol::PatrolLeft) ;
+        bool offRight = readPatrol(Patrol::PatrolRight);
+        // Display sensor values on LEDs
+        writeLED(LED::LEDLeft, offLeft? LEDswitch::turnOn : LEDswitch::turnOff);
+        writeLED(LED::LEDRight, offRight? LEDswitch::turnOn : LEDswitch::turnOff);
 
-            /*
-            motorRun(Motors::All, Dir::CW,0x0);
-            if(turnLeft)
-            {
-                motorRun(Motors::Right, Dir::CW,0x80);
-                uBit.sleep(100);
-                turnLeft = 0;
-            }
-            else
-            {
-                motorRun(Motors::Left, Dir::CW,0x80);
-                uBit.sleep(100);
-                turnLeft = 1;
-            }
-            
-            */
-        }
+        if(follow_direction == FOLLOW_LEFT) followLeft(offLeft,offRight);
+        else if (follow_direction == FOLLOW_RIGHT) followRight(offLeft,offRight);
+        else followForward(offLeft,offRight);
+        
+        
+
         uBit.sleep(20);
         int distance = readUlt();
         while(distance < 5 && distance >= 0) //3 centimetres away
