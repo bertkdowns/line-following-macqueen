@@ -81,7 +81,7 @@ void followRight(int offLeft, int offRight){
 void followForward(int offLeft, int offRight){
     // white on left side, black on right side
     if(offLeft && !offRight){
-        motorRun(Motors::Right, Dir::CW,MAX_SPEED/2);
+        motorRun(Motors::Right, Dir::CW,MAX_SPEED/4);
         motorRun(Motors::Left, Dir::CW,MAX_SPEED);
     }
     // black on left side, white on right side
@@ -100,7 +100,7 @@ void followForward(int offLeft, int offRight){
     // both white
     else{
         // turn right
-        motorRun(Motors::Right, Dir::CCW,MAX_SPEED/2);
+        motorRun(Motors::Right, Dir::CCW,MAX_SPEED/4);
         motorRun(Motors::Left, Dir::CW,MAX_SPEED);
     }
     /*if(offLeft && !offRight)
