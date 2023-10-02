@@ -8,7 +8,34 @@ MicroBit uBit;
 #define FOLLOW_RIGHT 1
 #define MAX_SPEED 0x60
 
-int follow_direction = FOLLOW_FORWARD;
+int follow_direction = FOLLOW_LEFT;
+Image smiley("0,255,0,255, 0\n0,255,0,255,0\n0,0,0,0,0\n255,0,0,0,255\n0,255,255,255,0\n");
+/*Compass methods*/
+bool nearby(int locationA,int locationB, int maxDegrees){
+    // checks if the two locations are nearby each other
+    if(abs(locationA-locationB) <= maxDegrees) return true;
+    // add 180 degrees and mod 360, so that values 0 and 359 are mapped to 180 and 179 respectively
+    locationA = (locationA + 180) % 360;
+    locationB = (locationB + 180) % 360;
+    // check if these are close
+    if(abs(locationA-locationB) <= maxDegrees) return true;
+    else return false;
+}
+
+void delayUntil(int targetHeading, int precision){
+    // delays until you reach a specific heading
+    uBit.sleep(50);
+    bool isNearby = false;
+    uBit.display.image.clear();
+    uBit.display.print(smiley);
+    while(isNearby){
+        int val = uBit.compass.heading();
+        isNearby = nearby(val,targetHeading,precision);
+    }
+    uBit.display.image.clear();
+}
+
+
 
 void followLeft(int offLeft, int offRight){
     uBit.display.image.clear();
@@ -31,7 +58,12 @@ void followLeft(int offLeft, int offRight){
         // We have hit an intersection, turn left
         motorRun(Motors::Left, Dir::CW,0x0);
         motorRun(Motors::Right, Dir::CW,MAX_SPEED);
-        uBit.sleep(600);
+        // keep turning till you've turned 90 degrees
+        int val = uBit.compass.heading();
+        // subtract 90 degrees to get target value for turning left
+        int target = (val + 270) % 360;
+        delayUntil(target,30);
+        //uBit.sleep(600);
         follow_direction = FOLLOW_RIGHT;
     }
     // both black
@@ -54,7 +86,12 @@ void followRight(int offLeft, int offRight){
         // We have hit an intersection, turn right
         motorRun(Motors::Right, Dir::CW,0x0);
         motorRun(Motors::Left, Dir::CW,MAX_SPEED);
-        uBit.sleep(600);
+        // keep turning till you've turned 90 degrees
+        int val = uBit.compass.heading();
+        // add 90 degrees to get target value for turning right
+        int target = (val + 90) % 360;
+        delayUntil(target,30);
+        //uBit.sleep(600);
         follow_direction = FOLLOW_LEFT;
         
     }
@@ -153,13 +190,13 @@ void followForward(int offLeft, int offRight){
 int main()
 {
     uBit.init();
-
+    uBit.compass.calibrate();
     //Motor Run is driving
     //CW means forward
     //0x80 means speed at 128 digital value
     
-    //Sleep for 2 seconds
-    uBit.sleep(2000);
+    //Sleep for 1 seconds
+    uBit.sleep(1000);
     //0x0 means stop
     
 
