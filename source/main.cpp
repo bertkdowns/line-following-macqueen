@@ -62,8 +62,8 @@ void followLeft(int offLeft, int offRight){
         int val = uBit.compass.heading();
         // subtract 90 degrees to get target value for turning left
         int target = (val + 270) % 360;
-        delayUntil(target,30);
-        //uBit.sleep(600);
+        delayUntil(target,5);
+        uBit.sleep(575);
         follow_direction = FOLLOW_RIGHT;
     }
     // both black
@@ -90,8 +90,8 @@ void followRight(int offLeft, int offRight){
         int val = uBit.compass.heading();
         // add 90 degrees to get target value for turning right
         int target = (val + 90) % 360;
-        delayUntil(target,30);
-        //uBit.sleep(600);
+        delayUntil(target,5);
+        uBit.sleep(575);
         follow_direction = FOLLOW_LEFT;
         
     }
@@ -196,7 +196,7 @@ int main()
     //0x80 means speed at 128 digital value
     
     //Sleep for 1 seconds
-    uBit.sleep(1000);
+    //uBit.sleep(1000);
     //0x0 means stop
     
 
