@@ -7,10 +7,14 @@ MicroBit uBit; //Define Microbit
 #define FOLLOW_FORWARD 0 //Center
 #define FOLLOW_RIGHT 1 //Right
 #define MAX_SPEED 0x60 //96 for max speed
-#define FOLLOW_MAZE 1 //Follow Maze
+#define FOLLOW_MAZE 0 //Follow Maze
 
 int follow_direction = FOLLOW_LEFT; //Set to follow left
-Image smiley("0,255,0,255, 0\n0,255,0,255,0\n0,0,0,0,0\n255,0,0,0,255\n0,255,255,255,0\n");  //Pixels for smiley face
+Image Smiley_img("0,255,0,255, 0\n0,255,0,255,0\n0,0,0,0,0\n255,0,0,0,255\n0,255,255,255,0\n");  //Pixels for smiley face
+Image L_img("255,0,0,0, 0\n255,0,0,0,0\n255,0,0,0,0\n255,0,0,0,0\n255,255,255,255,255\n");
+Image R_img("255,255,255,0, 0\n255,0,0,255,0\n255,255,255,0,0\n255,0,0,255,0\n255,0,0,0,255\n");
+Image Horizontal_Line_img("0,0,0,0, 0\n0,0,0,0,0\n255,255,255,255,255\n0,0,0,0,0\n0,0,0,0,0\n");
+
 /*Compass methods*/
 int distanceBetweenHeadings(int locationA, int locationB){
     // Calculates the distance between two headings, up to a maximum of 180 degrees
@@ -24,25 +28,23 @@ int distanceBetweenHeadings(int locationA, int locationB){
     return distance1 < distance2 ? distance1 : distance2;
 }
 
-//If the location between A and B are between precision defined
-bool nearby(int locationA,int locationB, int maxDegrees){
-    return (distanceBetweenHeadings(locationA,locationB) < maxDegrees);
-}
 
-void delayUntil(int targetHeading, int precision, int minDelay, int maxDelay){
+
+void delayUntil(COORD target, int percentagePrecision, int minDelay, int maxDelay){
+    uBit.display.image.clear();
+    uBit.display.print(Horizontal_Line_img);
     // delays until you reach a specific heading, or times out at max delay.
     // This allows us to compare the compass value with the expected changes from turning the wheels
     // because we know roughly how long we need to delay for the robot to turn.
     uBit.sleep(minDelay); //Sleep for minimum delay
     int totalDelay = minDelay; //Set totalDelay counter
-    bool isNearby = false; //Set is nearby to flase
-    uBit.display.image.clear();
-    uBit.display.print(smiley);
-    while(!isNearby && totalDelay < maxDelay){ //Nearby or too long stops rotating
-        //Read the compass heading and precision
-        isNearby = nearby(targetHeading,uBit.compass.heading(),precision); //Precision between two locations
+    int difference = 100; //100%, maximum difference
+    while(difference < percentagePrecision && totalDelay < maxDelay){ //Nearby or too long stops rotating
         uBit.sleep(5); //Sleep for 5 millisceonds
         totalDelay += 5; //Add 5 to delay for pausing for 5 millisceonds
+        //Read the compass heading and precision
+        COORD currentDirection = readCompass();
+        difference = closeness(currentDirection,target); //Precision between two locations
     }
     uBit.display.image.clear(); //Clear the smiley face
 }
@@ -51,15 +53,7 @@ void delayUntil(int targetHeading, int precision, int minDelay, int maxDelay){
 void followLeft(int offLeft, int offRight){
     uBit.display.image.clear(); //Clear before drawing
     //Draw the letter L on the Microbit
-    uBit.display.image.setPixelValue(0,0,255);
-    uBit.display.image.setPixelValue(0,1,255);
-    uBit.display.image.setPixelValue(0,2,255);
-    uBit.display.image.setPixelValue(0,3,255);
-    uBit.display.image.setPixelValue(0,4,255);
-    uBit.display.image.setPixelValue(1,4,255);
-    uBit.display.image.setPixelValue(2,4,255);
-    uBit.display.image.setPixelValue(3,4,255);
-    uBit.display.image.setPixelValue(4,4,255);
+    uBit.display.print(L_img);
     // white on left side, black on right side
     if(offLeft && !offRight){
         motorRun(Motors::Right, Dir::CW,MAX_SPEED/4); //Turn right since left motor is faster
@@ -70,12 +64,13 @@ void followLeft(int offLeft, int offRight){
         // We have hit an intersection, turn left
         motorRun(Motors::Left, Dir::CW,0x0);
         motorRun(Motors::Right, Dir::CW,MAX_SPEED);
+
         // keep turning till you've turned 90 degrees
-        int val = uBit.compass.heading();
-        // subtract 90 degrees to get target value for turning left (this is more than 90 degrees because the compass has low prescision.)
-        int target = (val + 270) % 360;
-        delayUntil(target,30,600,1000); //Delay for rotation
-        //uBit.sleep(575);
+        COORD current_direction = readCompass();
+        // subtract 90 degrees to get target value for turning left
+        COORD target = rotateCoordinate(current_direction,-90);
+        delayUntil(target,10,0,10000); //Target direction, percentage accuracy, min delay, max delay.
+
         follow_direction = FOLLOW_RIGHT; //Follow right
     }
     // both black
@@ -93,17 +88,19 @@ void followLeft(int offLeft, int offRight){
 }
 void followRight(int offLeft, int offRight){
     uBit.display.image.clear();
+    uBit.display.print(R_img);
     // white on left side, black on right side
     if(offLeft && !offRight){
         // We have hit an intersection, turn right
         motorRun(Motors::Right, Dir::CW,0x0);
         motorRun(Motors::Left, Dir::CW,MAX_SPEED);
+        
         // keep turning till you've turned 90 degrees
-        int val = uBit.compass.heading();
-        // add 90 degrees to get target value for turning right
-        int target = (val + 90) % 360;
-        delayUntil(target,30,600,1000); //Delay until rotation is complete
-        //uBit.sleep(575);
+        COORD current_direction = readCompass();
+        // subtract 90 degrees to get target value for turning left
+        COORD target = rotateCoordinate(current_direction,+90);
+        delayUntil(target,10,0,10000); //Target direction, percentage accuracy, min delay, max delay.
+
         follow_direction = FOLLOW_LEFT; //Follow left
         
     }
@@ -159,8 +156,8 @@ void followForward(int offLeft, int offRight){
 int main()
 {
     uBit.init(); //Initalise the microbit
-    uBit.compass.calibrate(); //Calibrate the compass
     //Motor Run is driving
+    calibrateCompass();
     //CW means forward
     //0x80 means speed at 128 digital value
     
