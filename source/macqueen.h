@@ -28,18 +28,6 @@ enum class LEDswitch {
     turnOff = 0x00
 };
 
-typedef struct CompassCooordinate {
-    int x;
-    int y;
-} COORD;
-void calibrateCompass();
-
-COORD readCompass();
-
-COORD rotateCoordinate(COORD input, int degrees);
-
-int closeness(COORD a, COORD b);
-
 void motorRun(Motors index, Dir direction, uint8_t speed);
 
 int readPatrol(Patrol patrol) ;
